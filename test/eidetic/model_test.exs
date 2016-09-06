@@ -46,7 +46,7 @@ defmodule ModelTest do
     %{state | forename: event.payload.forename, age: event.payload.age }
   end
 
-  def apply_event(%Event{} = event, state) do
+  def apply_event(%Event{} = event, _) do
     raise RuntimeError, message: "Unsupported event: #{event.type}, version #{event.version}"
   end
 

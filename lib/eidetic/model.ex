@@ -18,10 +18,6 @@ defmodule Eidetic.Model do
             defp initialise([], state) do
               state
             end
-
-            defp apply_event(_) do
-              raise RuntimeError, message: "I have no idea what you're trying to do"
-            end
         end
     end
 end
