@@ -1,3 +1,3 @@
 defmodule Eidetic.Event do
-    defstruct type: nil, datetime: nil, payload: nil
+    defstruct type: nil, version: nil, datetime: nil, payload: nil
 end
