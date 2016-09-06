@@ -3,7 +3,7 @@ defmodule Eidetic.Model do
     defmacro __using__(_) do
         quote do
             alias Eidetic.Event
-
+            
             def initialise([head | tail]) do
               initialState = initialise()
               newState = apply_event(head, initialState)
@@ -17,6 +17,10 @@ defmodule Eidetic.Model do
 
             defp initialise([], state) do
               state
+            end
+
+            defp apply_event(%Event{} = event, _) do
+              raise RuntimeError, message: "Unsupported event: #{event.type}, version #{event.version}"
             end
         end
     end

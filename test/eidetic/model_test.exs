@@ -1,6 +1,6 @@
 defmodule ModelTest do
   use ExUnit.Case
-  use Eidetic.Model
+  alias Eidetic.Event;
 
   defstruct forename: nil, age: nil
 
@@ -42,12 +42,10 @@ defmodule ModelTest do
     %ModelTest{ forename: nil, age: nil }
   end
 
-  def apply_event(%Event{ type: "CreateModelTest", version: 1 } = event, %ModelTest{} = state) do
+  defp apply_event(%Event{ type: "CreateModelTest", version: 1 } = event, %ModelTest{} = state) do
     %{state | forename: event.payload.forename, age: event.payload.age }
   end
 
-  def apply_event(%Event{} = event, _) do
-    raise RuntimeError, message: "Unsupported event: #{event.type}, version #{event.version}"
-  end
+  use Eidetic.Model
 
 end
