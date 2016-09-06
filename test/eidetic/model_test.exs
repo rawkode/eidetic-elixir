@@ -7,46 +7,43 @@ defmodule ModelTest do
   doctest Eidetic.Model
 
   test "it can initialise with no events" do
-    assert initialise() == {
-      :ok,
-        %ModelTest {
-          forename: nil,
-          age: nil
-        }
-      }
+    assert initialise() == %ModelTest {
+      forename: nil,
+      age: nil
+    }
   end
 
-  test "it can initialise with a single CreateUser event" do
+  test "it can initialise with a single CreateModelTest event" do
     assert initialise([
       %Event {
-        type: "CreateUser",
+        type: "CreateModelTest",
         version: 1,
         datetime: "now",
-        "payload": nil
+        "payload": %{ forename: "David", age: 32 }
       }
-    ]) == { :ok, %ModelTest{
+    ]) == %ModelTest{
       forename: "David",
       age: 32
-    }}
+    }
   end
 
   test "it raises an error when no match can be made on event type and version" do
     assert_raise RuntimeError, ~r/^Unsupported event/, fn -> initialise([
       %Event {
-        type: "CreateUser",
+        type: "CreateModelTest",
         version: 2,
         datetime: "now",
-        "payload": nil
+        "payload": %{ forename: "David", age: 32 }
       }
     ]) end
   end
 
   def initialise() do
-    { :ok, %ModelTest{ forename: nil, age: nil } }
+    %ModelTest{ forename: nil, age: nil }
   end
 
-  def apply_event(%Event{ type: "CreateUser", version: 1 } = event, state) do
-    { :ok, %ModelTest { forename: "David", age: 32 } }
+  def apply_event(%Event{ type: "CreateModelTest", version: 1 } = event, %ModelTest{} = state) do
+    %{state | forename: event.payload.forename, age: event.payload.age }
   end
 
   def apply_event(%Event{} = event, state) do
