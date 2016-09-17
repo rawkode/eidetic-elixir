@@ -42,8 +42,27 @@ defmodule ModelTest do
     %ModelTest{ forename: nil, age: nil }
   end
 
+  def rename(%ModelTest{} = model, forename) do
+    event = %Event{
+      type: "Rename",
+      version: 1,
+      datetime: "now",
+      payload: %{
+        forename: forename
+      }
+    }
+
+    state = apply_event(event, model)
+
+    { :ok, state: state, event: event }
+  end
+
   defp apply_event(%Event{ type: "CreateModelTest", version: 1 } = event, %ModelTest{} = state) do
     %{state | forename: event.payload.forename, age: event.payload.age }
+  end
+
+  defp apply_event(%Event{ type: "Rename", version: 1 } = event, %ModelTest{} = state) do
+    %{state | forename: event.payload.forename }
   end
 
   use Eidetic.Model

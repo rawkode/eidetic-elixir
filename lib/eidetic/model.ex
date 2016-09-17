@@ -3,9 +3,11 @@ defmodule Eidetic.Model do
     defmacro __using__(_) do
         quote do
             alias Eidetic.Event
-            
+
             def initialise([head | tail]) do
+              # Here I am relying on the implementing model to have provided this function ...
               initialState = initialise()
+
               newState = apply_event(head, initialState)
               initialise(tail, newState)
             end
