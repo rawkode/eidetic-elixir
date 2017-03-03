@@ -1,45 +1,34 @@
 defmodule ModelTest do
   use ExUnit.Case
-  alias Eidetic.Event;
+  use Eidetic.Model, fields: [forename: nil, age: nil]
 
-  defstruct forename: nil, age: nil
-
-  doctest Eidetic.Model
-
-  test "it can initialise with no events" do
-    assert initialise() == %ModelTest {
-      forename: nil,
-      age: nil
-    }
+  test "Model can be initialised with no events" do
+    assert %ModelTest{} = initialise()
+    assert %ModelTest{} = initialise([])
   end
 
-  test "it can initialise with a single CreateModelTest event" do
-    assert initialise([
-      %Event {
+  test "Model can be initialised with a single event" do
+    model = initialise([event =
+      %Event{
         type: "CreateModelTest",
         version: 1,
-        datetime: "now",
-        "payload": %{ forename: "David", age: 32 }
-      }
-    ]) == %ModelTest{
-      forename: "David",
-      age: 32
-    }
+        serial_number: 1,
+        "payload": %{forename: "David", age: 33}
+      }])
+
+    assert %ModelTest{forename: "David", age: 33} = model
+    assert %ModelTest{meta: %Meta{serial_number: 1}} = model
+    assert %ModelTest{meta: %Meta{pending_events: [^event]}} = model
   end
 
   test "it raises an error when no match can be made on event type and version" do
     assert_raise RuntimeError, ~r/^Unsupported event/, fn -> initialise([
-      %Event {
+      %Event{
         type: "CreateModelTest",
         version: 2,
-        datetime: "now",
-        "payload": %{ forename: "David", age: 32 }
-      }
-    ]) end
-  end
-
-  def initialise() do
-    %ModelTest{ forename: nil, age: nil }
+        serial_number: 1,
+        "payload": %{forename: "David", age: 33}
+      }]) end
   end
 
   def rename(%ModelTest{} = model, forename) do
@@ -57,14 +46,13 @@ defmodule ModelTest do
     { :ok, state: state, event: event }
   end
 
-  defp apply_event(%Event{ type: "CreateModelTest", version: 1 } = event, %ModelTest{} = state) do
-    %{state | forename: event.payload.forename, age: event.payload.age }
+  defp _apply_event(event = %Event{ type: "CreateModelTest", version: 1 }, model = %ModelTest{}) do
+    %{model | forename: event.payload.forename, age: event.payload.age }
   end
 
-  defp apply_event(%Event{ type: "Rename", version: 1 } = event, %ModelTest{} = state) do
+  defp _apply_event(%Event{ type: "Rename", version: 1 } = event, %ModelTest{} = state) do
     %{state | forename: event.payload.forename }
   end
 
-  use Eidetic.Model
 
 end

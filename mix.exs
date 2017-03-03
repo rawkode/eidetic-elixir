@@ -2,9 +2,8 @@ defmodule Eidetic.Mixfile do
   use Mix.Project
 
   def project do
-    [
-      app: :eidetic,
-      version: "0.1.0",
+    [ app: :eidetic,
+      version: "0.0.1",
       elixir: "~> 1.3",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
@@ -13,16 +12,17 @@ defmodule Eidetic.Mixfile do
   end
 
   def application do
-    [
-        applications: [
-            :logger
-        ]
+    [ applications: [
+        :logger
+      ]
     ]
   end
 
   defp deps do
-    [
-        {:espec, "~> 1.0.1", only: :test},
+    [ {:ecto, "~> 2.1"},
+      {:poison, "~> 3.1"},
+      {:espec, "~> 1.0.1", only: :test}
     ]
   end
 end
+

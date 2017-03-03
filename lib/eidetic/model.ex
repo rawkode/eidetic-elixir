@@ -1,29 +1,69 @@
 defmodule Eidetic.Model do
-    @doc false
-    defmacro __using__(_) do
-        quote do
-            alias Eidetic.Event
+  @doc false
 
-            def initialise([head | tail]) do
-              # Here I am relying on the implementing model to have provided this function ...
-              initialState = initialise()
+  @doc false
+  defmacro __using__(fields: fields) do
+    quote do
+      alias Eidetic.Event
 
-              newState = apply_event(head, initialState)
-              initialise(tail, newState)
-            end
+      defstruct unquote(fields) ++ [:meta]
 
-            defp initialise([head | tail], state) do
-              newState = apply_event(state, head)
-              initialise(tail, newState)
-            end
+      @doc false
+      defmodule Meta do
+        defstruct identifier: nil, serial_number: 0, pending_events: []
+      end
 
-            defp initialise([], state) do
-              state
-            end
+      @doc false
+      def initialise() do
+        %__MODULE__{meta: %Meta{}}
+      end
 
-            defp apply_event(%Event{} = event, _) do
-              raise RuntimeError, message: "Unsupported event: #{event.type}, version #{event.version}"
-            end
+      @doc false
+      defp initialise([]) do
+        initialise()
+      end
+
+      defp initialise([head|tail]) do
+        new_state = apply_event(head, initialise())
+
+        initialise(tail, new_state)
+      end
+
+      @doc false
+      defp initialise([head | tail], state) do
+        newState = apply_event(head, state)
+        initialise(tail, newState)
+      end
+
+      @doc false
+      defp initialise([], state) do
+        state
+      end
+
+      @doc false
+      defp apply_event(events, model) when is_list(events) do
+        Enum.reduce(events, model, fn(event, state) -> apply_event(event, state) end)
+      end
+
+      @doc false
+      defp apply_event(%Eidetic.Event{} = event, state) do
+        try do
+          new_state = _apply_event(event, state)
+          adjust_meta(new_state, event)
+        rescue
+          error -> raise RuntimeError, message: "Unsupported event: #{event.type}, version #{event.version}"
         end
-    end
+
+      end
+
+      @doc false
+      defp adjust_meta(model = %__MODULE__{}, event = %Eidetic.Event{}) do
+        new_model = %{model | meta: %Meta{
+          serial_number: model.meta.serial_number + 1,
+          pending_events: model.meta.pending_events ++ [event]
+        }}
+      end
+	  end
+  end
 end
+
