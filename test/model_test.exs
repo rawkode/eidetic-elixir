@@ -5,6 +5,7 @@ defmodule Test.Eidetic.Model do
     registered: %Eidetic.Event{
       type: "UserRegistered",
       version: 1,
+      serial_number: 1,
       payload: %{
         forename: "Darrell",
         surname: "Abbott"
@@ -13,6 +14,7 @@ defmodule Test.Eidetic.Model do
     renamed: %Eidetic.Event{
       type: "UserRenamed",
       version: 1,
+      serial_number: 2,
       payload: %{
         forename: "Dimebag",
         surname: "Darrell"
@@ -21,6 +23,7 @@ defmodule Test.Eidetic.Model do
     unhandled: %Eidetic.Event{
       type: "UserChangedTheirName",
       version: 2,
+      serial_number: 1,
       payload: %{
         forename: "Dimebag",
         surname: "Darrell"
@@ -29,15 +32,19 @@ defmodule Test.Eidetic.Model do
   }
 
   test "Can create a new User" do
+    require Logger
+    hje = Example.User.register(forename: "Darrell", surname: "Abbott")
+    Logger.debug(inspect(hje))
+
     assert %Example.User{forename: "Darrell", surname: "Abbott"} = Example.User.register(forename: "Darrell", surname: "Abbott")
   end
 
   test "Can load a user from a single event" do
-    user = Example.User.load("my-identifier", Map.get(@user_events, :registered))
+    user = Example.User.load(UUID.uuid4(), Map.get(@user_events, :registered))
 
     assert %Example.User{forename: "Darrell", surname: "Abbott"} = user
-    assert %Example.User{meta: %Example.User.Meta{serial_number: 1}} = user
-    assert %Example.User{meta: %Example.User.Meta{uncommitted_events: []}} = user
+    assert %Example.User{meta: %Eidetic.Meta{serial_number: 1}} = user
+    assert %Example.User{meta: %Eidetic.Meta{uncommitted_events: []}} = user
   end
 
   test "Can load a user from a list of events" do
@@ -46,8 +53,8 @@ defmodule Test.Eidetic.Model do
     user = Example.User.load("my-identifier", list_of_events)
 
     assert %Example.User{forename: "Dimebag", surname: "Darrell"} = user
-    assert %Example.User{meta: %Example.User.Meta{serial_number: 2}} = user
-    assert %Example.User{meta: %Example.User.Meta{uncommitted_events: []}} = user
+    assert %Example.User{meta: %Eidetic.Meta{serial_number: 2}} = user
+    assert %Example.User{meta: %Eidetic.Meta{uncommitted_events: []}} = user
   end
 
   test "Will raise an error if there is an event that the model cannot handle" do
@@ -55,8 +62,11 @@ defmodule Test.Eidetic.Model do
   end
 
   test "Can return the identifier when asked" do
-    model = Example.User.load("my-identifier", Map.get(@user_events, :registered))
+    identifier = UUID.uuid4()
 
+    model = Example.User.load(identifier, Map.get(@user_events, :registered))
+
+    assert model.meta.identifier == identifier
     assert [uuid: _, binary: _,  type: _, version: 4, variant: _] = model
       |> Example.User.identifier()
       |> UUID.info!
@@ -67,8 +77,25 @@ defmodule Test.Eidetic.Model do
 
     {new_model, events} = Example.User.commit(model)
 
+    assert new_model.meta.uncommitted_events == []
     assert length(events)
-    assert ^events = [Map.get(@user_events, :registered)]
+  end
+
+  test "It correctly manages the identifier and serial_number on the events" do
+    {model, events} = Example.User.register(forename: "Darrell", surname: "Abbott")
+      |> Example.User.rename(forename: "Dimebag", surname: "Darrell")
+      |> Example.User.commit()
+
+    require Logger
+
+    assert length(events) == 2
+
+    {event1, _} = List.pop_at(events, 0)
+    {event2, _} = List.pop_at(events, 1)
+
+    assert event1.identifier == event2.identifier
+    assert event1.serial_number == 1
+    assert event2.serial_number == 2
   end
 
   end

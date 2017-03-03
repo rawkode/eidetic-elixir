@@ -23,12 +23,11 @@ defmodule Eidetic.Model do
     quote do
       require Logger
 
-      defstruct unquote(fields) ++ [:meta]
+      # TODO: I don't think I need to abuse __using__ anymore, as it's much more
+      # functional than it was before and only a few public functions needed
+      #import Eidetic.Model, only: [load/2, emit/2/3]
 
-      @doc false
-      defmodule Meta do
-        defstruct identifier: UUID.uuid4(), serial_number: 0, uncommitted_events: []
-      end
+      defstruct unquote(fields) ++ [meta: %Eidetic.Meta{}]
 
       @doc """
       Load a model by providing the identifier and a list of events to process
@@ -36,9 +35,11 @@ defmodule Eidetic.Model do
       def load(identifier, events) do
         Logger.debug("Loading #{__MODULE__} with identifier '#{identifier}' and events #{inspect events}")
 
-        {model, events} = %__MODULE__{meta: %Meta{identifier: identifier}}
+        model = %__MODULE__{meta: %Eidetic.Meta{identifier: identifier}}
           |> initialise(events)
-          |> commit()
+
+        {model, events} = commit(model)
+
         model
       end
 
@@ -67,7 +68,7 @@ defmodule Eidetic.Model do
       {%Example.User{}, [%Eidetic.Event{}]} = Example.Person.commit(my_person)
       ```
       """
-      def commit(model = %__MODULE__{}) do
+     def commit(model = %__MODULE__{}) do
         Logger.debug("Committing events for '#{__MODULE__}' (Identifier: '#{model.meta.identifier}'), "
           <> "with uncommitted events: #{inspect model.meta.uncommitted_events}")
 
@@ -78,7 +79,7 @@ defmodule Eidetic.Model do
       defp initialise() do
         Logger.debug("Creating a new #{__MODULE__}")
 
-        %__MODULE__{meta: %Meta{}}
+        %__MODULE__{meta: %Eidetic.Meta{}}
       end
 
       @doc false
@@ -107,34 +108,49 @@ defmodule Eidetic.Model do
       end
 
       @doc false
+      defp emit(type: type, version: version, payload: payload) do
+        model = %__MODULE__{meta: %Eidetic.Meta{identifier: UUID.uuid4()}}
+
+        Logger.debug("Event Emitted with no model. Generating '#{__MODULE__}' with identifier '#{identifier(model)}'")
+
+        emit model: model, type: type, version: version, payload: payload
+      end
+
+      @doc false
+      defp emit(model: model = %__MODULE__{}, type: type, version: version, payload: payload) do
+        Logger.debug("Event Emitted from '#{__MODULE__}' (identifier: #{model.meta.identifier}, type: #{type}, version: #{version}, payload: #{inspect payload})")
+
+        event = %Eidetic.Event{
+          identifier: identifier(model),
+          serial_number: serial_number(model) + 1,
+          type: type,
+          version: version,
+          payload: payload
+        }
+
+        _apply_event(model, event)
+      end
+
+      @doc false
       defp _apply_event(model, events) when is_list(events) do
         Enum.reduce(events, model, fn(event, model) -> _apply_event(event, model) end)
       end
 
       @doc false
-      defp _apply_event(model, event = %Eidetic.Event{}) do
-        try do
-          model
-            |> apply_event(event)
-            |> adjust_meta(event)
-        rescue
-          error -> raise RuntimeError, message: "Unsupported event: #{event.type}, version #{event.version}"
-        end
+      defp _apply_event(model = %__MODULE__{}, event = %Eidetic.Event{}) do
+        model = Map.put(model, :meta, %{model.meta | serial_number: event.serial_number, uncommitted_events: model.meta.uncommitted_events ++ [event]})
+
+       try do
+         apply_event(model, event)
+       rescue
+         error -> raise RuntimeError, message: "Unsupported event: #{event.type}, version #{event.version}"
+       end
 
       end
 
       @doc false
       defp apply_event("Never gonna give you up", "Never gonna let you down") do
           raise RuntimeError, message: "Or hurt you"
-      end
-
-      @doc false
-      defp adjust_meta(model = %__MODULE__{}, event = %Eidetic.Event{}) do
-        Logger.debug("Adjusting metadata for '#{__MODULE__}' (Identifier: '#{model.meta.identifier}'), bumping serial number to #{model.meta.serial_number + 1}")
-        %{model | meta: %Meta{
-          serial_number: (model.meta.serial_number + 1),
-          uncommitted_events: model.meta.uncommitted_events ++ [event]
-        }}
       end
 	  end
   end
