@@ -1,5 +1,5 @@
 defmodule Eidetic.Event do
-  defstruct identifier: nil,
+  defstruct identifier: UUID.uuid4(),
     serial_number: 0,
     type: nil,
     version: nil,

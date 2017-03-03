@@ -24,7 +24,8 @@ defmodule Eidetic.Mixfile do
   end
 
   def deps do
-    [{:ex_doc, ">= 0.0.0", only: :dev}]
+    [ {:ex_doc, ">= 0.0.0", only: :dev},
+      {:uuid, "~> 1.1"}]
   end
 
   def aliases do
@@ -45,7 +46,7 @@ defmodule Eidetic.Mixfile do
 
   defp package do
     [ name: :eidetic,
-      files: ["lib", "examples", "mix.exs", "README.md", "LICENSE"],
+      files: ["lib", "mix.exs", "README.md", "LICENSE"],
       maintainers: ["David McKay"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/rawkode/eidetic-elixir"}]
