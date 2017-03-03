@@ -12,17 +12,14 @@ defmodule Eidetic.Mixfile do
   end
 
   def application do
-    [ applications: [
+    [ extra_applications: [
         :logger
       ]
     ]
   end
 
-  defp deps do
-    [ {:ecto, "~> 2.1"},
-      {:poison, "~> 3.1"},
-      {:espec, "~> 1.0.1", only: :test}
-    ]
+  def deps do
+    []
   end
 end
 
