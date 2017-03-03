@@ -16,9 +16,9 @@ defmodule Eidetic.Mixfile do
 
   def application do
     [ extra_applications: [
-        :logger
-      ]
+      :logger
     ]
+  ]
   end
 
   def deps do
@@ -26,8 +26,7 @@ defmodule Eidetic.Mixfile do
   end
 
   def aliases do
-    [
-      "init": ["local.hex --force", "deps.get"],
+    [ "init": ["local.hex --force", "deps.get"],
       "test": ["init", "test"]
     ]
   end
@@ -36,5 +35,18 @@ defmodule Eidetic.Mixfile do
   defp elixirc_paths(:dev),   do: elixirc_paths(:test)
   defp elixirc_paths(_),      do: []
 
+  defp description do
+    """
+    An event-sourcing library for Elixir
+    """
+  end
+
+  defp package do
+    [ name: :eidetic,
+      files: ["lib", "examples", "mix.exs", "README.md", "LICENSE"],
+      maintainers: ["David McKay"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/rawkode/eidetic-elixir"}]
+  end
 end
 
