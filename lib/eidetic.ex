@@ -15,5 +15,10 @@ defmodule Eidetic do
   ## Examples
   Please checkout the [GitHub Examples](https://github.com/rawkode/eidetic-elixir/tree/master/examples) directory
   """
+  use Application
+
+  def start(_type, _args) do
+    Eidetic.EventStore.start_link()
+  end
 end
 
