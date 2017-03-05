@@ -15,7 +15,7 @@ defmodule Eidetic.EventStore.GenServer do
   @doc """
   Start our GenServer based EventStore
   """
-	def start_link(state \\ %{}) do
+  def start_link(state \\ %{}) do
     GenServer.start_link(__MODULE__, state, [])
   end
 
