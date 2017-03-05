@@ -1,15 +1,8 @@
 # Eidetic
 
-*WARNING:* This is under active development
+*WARNING:* This is under active development. Do *NOT* use
 
 Initial implementation of an event sourced model that can be used in Elixir.
-
-## Installing
-```elixir
-def deps do
-  [{:eidetic, "~> 0.0.2"}]
-end
-```
 
 ## Creating Your First EventSourced Model
 
