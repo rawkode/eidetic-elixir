@@ -10,7 +10,6 @@ defmodule Eidetic.Mixfile do
       start_permanent: Mix.env == :prod,
       deps: deps(),
       aliases: aliases(),
-      elixirc_paths: elixirc_paths(Mix.env),
       description: description(),
       package: package()
     ]
@@ -33,10 +32,6 @@ defmodule Eidetic.Mixfile do
       "test": ["init", "test"]
     ]
   end
-
-  defp elixirc_paths(:test),  do: ["lib","examples"]
-  defp elixirc_paths(:dev),   do: elixirc_paths(:test)
-  defp elixirc_paths(_),      do: []
 
   defp description do
     """
