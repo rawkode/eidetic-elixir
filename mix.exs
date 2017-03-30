@@ -4,7 +4,7 @@ defmodule Eidetic.Mixfile do
 
   def project do
     [ app: :eidetic,
-      version: "0.0.2",
+      version: "0.0.3",
       elixir: "~> 1.3",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
@@ -42,9 +42,9 @@ defmodule Eidetic.Mixfile do
   defp package do
     [ name: :eidetic,
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
-      maintainers: ["David McKay"],
+      maintainers: ["GT8Online"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/rawkode/eidetic-elixir"}]
+      links: %{"GitHub" => "https://github.com/GT8Online/eidetic-elixir"}]
   end
 end
 
