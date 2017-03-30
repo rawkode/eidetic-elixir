@@ -9,6 +9,7 @@ defmodule Eidetic.Mixfile do
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
       deps: deps(),
+      elixirc_paths: elixirc_paths(Mix.env),
       aliases: aliases(),
       description: description(),
       package: package()
@@ -46,5 +47,9 @@ defmodule Eidetic.Mixfile do
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/GT8Online/eidetic-elixir"}]
   end
+
+  defp elixirc_paths(:dev),   do: ["lib"]
+  defp elixirc_paths(:test),  do: elixirc_paths(:dev) ++ ["examples"]
+  defp elixirc_paths(_),      do: ["lib"]
 end
 

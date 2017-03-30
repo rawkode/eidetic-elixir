@@ -3,7 +3,7 @@ defmodule Test.Eidetic.EventStore do
   require Logger
 
   setup do
-    Process.register(self(), :event_store_adapter)
+    Process.register(self(), :eidetic_eventstore_adapter)
     :ok
   end
 
