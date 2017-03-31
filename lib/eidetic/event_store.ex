@@ -9,9 +9,13 @@ defmodule Eidetic.EventStore do
 
   def init(_) do
     children = [
-      worker(Application.get_env(:eidetic, :eventstore), [name: :eidetic_eventstore_adapter]),
-      worker(Eidetic.PubSub, [name: :eidetic_eventstore_pubsub])
+      worker(Application.get_env(:eidetic, :eventstore), [name: :eidetic_eventstore_adapter])
     ]
+
+    Agent.start_link(fn -> MapSet.new end, name: :eidetic_eventstore_pubsub)
+    Enum.each(Application.get_env(:eidetic, :eventstore_subscribers), fn(subscriber) ->
+      add_subscriber(subscriber)
+    end)
 
     supervise(children, strategy: :one_for_one)
   end
@@ -25,7 +29,11 @@ defmodule Eidetic.EventStore do
 
     # Transaction didn't fail, publish
     for event <- model.meta.uncommitted_events do
-      GenServer.cast(:eidetic_eventstore_pubsub, {:publish, event})
+      Enum.each(Agent.get(:eidetic_eventstore_pubsub, fn subscribers -> subscribers end),
+        fn(subscriber) ->
+          Logger.debug("Publishing to subscriber #{inspect subscriber}")
+          GenServer.cast(subscriber, {:publish, event})
+      end)
     end
 
 
@@ -33,8 +41,6 @@ defmodule Eidetic.EventStore do
   end
 
   def add_subscriber(subscriber) do
-    Logger.debug("Howdy")
-    GenServer.cast(:eidetic_eventstore_pubsub, {:add_subscriber, subscriber})
+    Agent.update(:eidetic_eventstore_pubsub, &MapSet.put(&1, subscriber))
   end
 end
-

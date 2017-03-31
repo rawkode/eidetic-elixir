@@ -1,7 +1,7 @@
 defmodule Example.Subscriber do
-  require Logger
+  use GenServer
 
-  def receive(event = %Eidetic.Event{}) do
-    Logger.debug("Received an event")
+  def handle_cast({:publish, event = %Eidetic.Event{}}, _) do
+    {:noreply, {}}
   end
 end
