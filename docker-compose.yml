@@ -20,4 +20,3 @@ services:
       - mix:/root/.mix
       - deps:/code/deps
       - build:/code/_build
-

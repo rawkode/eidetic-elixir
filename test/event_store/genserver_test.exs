@@ -2,35 +2,17 @@ defmodule Test.Eidetic.EventStore.GenServer do
   use ExUnit.Case, async: true
   require Logger
 
-  @event %Eidetic.Event{
-    identifier: UUID.uuid4(),
-    serial_number: 1,
-    type: "UserRegistered",
-    version: 1,
-    datetime: DateTime.utc_now(),
-    metadata: %{},
-    payload: %{
-      "forename" => "David",
-      "surname" => "McKay"
-    }
-  }
+  test "It can store an event" do
+    user = Example.User.register(forename: "James", surname: "Hetfield")
+    user = Example.User.rename(user, forename: "Papa", surname: "Hetfield")
 
-  setup do
-    {:ok, registry} = Eidetic.EventStore.GenServer.start_link()
-    {:ok, registry: registry}
-  end
+    for event <- user.meta.uncommitted_events do
+      assert [object_identifier: object_identifier] = GenServer.call(:eidetic_eventstore_adapter, {:record, event})
+    end
 
-  test "It can store an event", %{registry: registry} do
-    assert :ok = Eidetic.EventStore.GenServer.record(registry, @event)
-    assert :ok = Eidetic.EventStore.GenServer.record(registry, @event)
-
-    events = Eidetic.EventStore.GenServer.fetch(registry, @event.identifier)
+    events = GenServer.call(:eidetic_eventstore_adapter, {:fetch, user.meta.identifier})
 
     assert length(events) == 2
-
-    for event <- events do
-      assert %Eidetic.Event{} = event
-    end
+    assert user.meta.uncommitted_events == events
   end
 end
-

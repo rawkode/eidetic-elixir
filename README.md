@@ -1,4 +1,5 @@
-# Eidetic
+# Eidetic (EventSourcing for Elixir)
+[![Build Status](https://travis-ci.org/GT8Online/eidetic-elixir.svg?branch=master)](https://travis-ci.org/GT8Online/eidetic-elixir)
 
 *WARNING:* This is under active development. Do *NOT* use
 
@@ -13,4 +14,3 @@ defmodule MyModel do
   use Eidetic.Model, fields: [forename: nil, surname: nil]
 end
 ```
-
