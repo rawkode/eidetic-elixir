@@ -22,7 +22,7 @@ defmodule Eidetic.EventStore.GenServer do
   @doc false
   def handle_call({:fetch, identifier}, _from, state) do
     Logger.debug("Looking for #{identifier} in state #{inspect state}")
-    {:reply, Map.get(state, identifier, nil), state}
+    {:reply, {:ok, Map.get(state, identifier, nil)}, state}
   end
 end
 

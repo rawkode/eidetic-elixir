@@ -10,7 +10,7 @@ defmodule Test.Eidetic.EventStore.GenServer do
       assert [object_identifier: object_identifier] = GenServer.call(:eidetic_eventstore_adapter, {:record, event})
     end
 
-    events = GenServer.call(:eidetic_eventstore_adapter, {:fetch, user.meta.identifier})
+    {:ok, events} = GenServer.call(:eidetic_eventstore_adapter, {:fetch, user.meta.identifier})
 
     assert length(events) == 2
     assert user.meta.uncommitted_events == events
