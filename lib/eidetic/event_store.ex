@@ -56,7 +56,7 @@ defmodule Eidetic.EventStore do
   """
   def load(type, identifier) do
     Logger.debug("I have #{type}")
-    events = GenServer.call(:eidetic_eventstore_adapter, {:fetch, identifier})
+    {:ok, events} = GenServer.call(:eidetic_eventstore_adapter, {:fetch, identifier})
     {:ok, type.load(identifier, events)}
   end
 
