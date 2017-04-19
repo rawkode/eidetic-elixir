@@ -7,4 +7,3 @@ defmodule Eidetic.Event do
     metadata: %{},
     datetime: DateTime.utc_now()
 end
-
