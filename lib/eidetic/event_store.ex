@@ -19,8 +19,8 @@ defmodule Eidetic.EventStore do
   ```
   """
 
-  @callback handle_call({:record, %Eidetic.Event{}}) :: {:ok, [object_identifier: String.t]}
-  @callback handle_call({:fetch, String.t}) :: {:ok, [events: [%Eidetic.Event{}]]}
+  @callback handle_call({:record, %Eidetic.Event{}}, pid, Map) :: {:ok, [object_identifier: String.t]}
+  @callback handle_call({:fetch, String.t}, pid, Map) :: {:ok, [events: [%Eidetic.Event{}]]}
 
   use Supervisor
   require Logger
