@@ -91,8 +91,8 @@ defmodule Test.Eidetic.Aggregate do
 
     assert length(events) == 2
 
-    {event1, _} = List.pop_at(events, 0)
-    {event2, _} = List.pop_at(events, 1)
+    event1 = List.first(events)
+    event2 = List.last(events)
 
     assert event1.identifier == event2.identifier
     assert event1.serial_number == 1

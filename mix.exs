@@ -17,7 +17,7 @@ defmodule Eidetic.Mixfile do
   end
 
   def application do
-    [ extra_applications: [
+    [ applications: [
       :logger
     ]
   ]
