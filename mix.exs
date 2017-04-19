@@ -11,7 +11,8 @@ defmodule Eidetic.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env),
       aliases: aliases(),
       description: description(),
-      package: package()
+      package: package(),
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 
