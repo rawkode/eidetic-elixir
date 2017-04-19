@@ -16,6 +16,6 @@ Please check out the [examples](/examples)
 
 ```elixir
 defmodule MyModel do
-  use Eidetic.Model, fields: [forename: nil, surname: nil]
+  use Eidetic.Aggregate, fields: [forename: nil, surname: nil]
 end
 ```
