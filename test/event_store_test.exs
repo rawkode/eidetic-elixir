@@ -12,6 +12,19 @@ defmodule Test.Eidetic.EventStore do
     assert {:ok, user} == Eidetic.EventStore.load(Example.User, user.meta.identifier)
   end
 
+  test "It can save! and load!" do
+    user =
+      [forename: "Darrell", surname: "Abbott"]
+      |> Example.User.register()
+      |> Eidetic.EventStore.save!()
+
+    Logger.debug(inspect(user))
+
+    assert user == Eidetic.EventStore.load!(Example.User, user.meta.identifier)
+    assert user.forename == "Darrell"
+    assert user.surname == "Abbott"
+  end
+
   test "It can add subscribers provided through configuration" do
     Process.register(self(), Example.Subscriber.Config)
 

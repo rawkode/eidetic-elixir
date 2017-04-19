@@ -1,6 +1,24 @@
 defmodule Eidetic.EventStore do
-  @moduledoc false
-  # Behaviour
+  @moduledoc """
+  This module manages loading / saving from / to the EventStore.
+
+  Configuring:
+
+  ```elixir
+  confing :eidetic eventstore_adapter: Some.Adapter
+  ```
+
+  Using:
+
+  ```elixir
+  {:ok, aggregate} = Eidetic.save(an_aggregate)
+
+  aggregate =
+    aggregate
+    |> Eidetic.save!()
+  ```
+  """
+
   @callback handle_call({:record, %Eidetic.Event{}}) :: {:ok, [object_identifier: String.t]}
   @callback handle_call({:fetch, String.t}) :: {:ok, [events: [%Eidetic.Event{}]]}
 
@@ -30,17 +48,17 @@ defmodule Eidetic.EventStore do
   end
 
   @doc """
-  Save an %Eidetic.Model{}'s uncommitted events to the EventStore
+  Save an %Eidetic.Aggregate{}'s uncommitted events to the EventStore
   """
-  def save(model) do
+  def save(aggregate) do
     # GenServer.cast(:eventstore_adapter, {:start_transaction})
-    for event <- model.meta.uncommitted_events do
+    for event <- aggregate.meta.uncommitted_events do
       GenServer.call(:eidetic_eventstore_adapter, {:record, event})
     end
     # :ok = GenServer.cast(:eventstore_adapter, {:end_transaction})
 
     # Transaction didn't fail, publish
-    for event <- model.meta.uncommitted_events do
+    for event <- aggregate.meta.uncommitted_events do
       Enum.each(Agent.get(:eidetic_eventstore_pubsub, fn subscribers -> subscribers end),
         fn(subscriber) ->
           Logger.debug("Publishing to subscriber #{inspect subscriber}")
@@ -48,16 +66,36 @@ defmodule Eidetic.EventStore do
       end)
     end
 
-    {:ok, %{model | meta: Map.put(model.meta, :uncommitted_events, [])}}
+    {:ok, %{aggregate | meta: Map.put(aggregate.meta, :uncommitted_events, [])}}
   end
 
   @doc """
-  Load events from the EventStore and produce a model
+  Save an %Eidetic.Aggregate{}'s uncommitted events to the EventStore, only returning the aggregate.
+
+  Eventually this will raise an error when a write / transaction fails.
+  """
+  def save!(aggregate) do
+    {:ok, aggregate} = save(aggregate)
+
+    aggregate
+  end
+
+  @doc """
+  Load events from the EventStore and produce a aggregate
   """
   def load(type, identifier) do
     Logger.debug("I have #{type}")
     {:ok, events} = GenServer.call(:eidetic_eventstore_adapter, {:fetch, identifier})
     {:ok, type.load(identifier, events)}
+  end
+
+  @doc """
+  Load events from the EventStore and produce a aggregate, only returning the aggregate.
+  """
+  def load!(type, identifier) do
+    {:ok, aggregate} = load(type, identifier)
+
+    aggregate
   end
 
   @doc """
