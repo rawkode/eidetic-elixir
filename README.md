@@ -10,6 +10,12 @@
 
 Initial implementation of an event sourced model that can be used in Elixir.
 
+## Installing
+
+```elixir
+{:eidetic, "~> 0.2.0"}
+```
+
 ## Creating Your First EventSourced Model
 
 Please check out the [examples](/examples)
